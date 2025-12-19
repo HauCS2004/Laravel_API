@@ -119,10 +119,17 @@ class PaymentController extends Controller
                     $order->status = 'paid'; // Đổi thành đã thanh toán
                     $order->save();
 
-                    return response()->json([
-                        'message' => 'Thanh toán thành công! Đơn hàng đã được cập nhật.',
-                        'data' => $request->all()
-                    ]);
+                   // ... Đoạn xử lý cập nhật đơn hàng thành 'paid' xong xuôi ...
+
+                    if ($order) {
+                        $order->status = 'paid';
+                        $order->save();
+                        
+                        // 🔥 CHUYỂN HƯỚNG VỀ TRANG CHỦ (Frontend)
+                        // Kèm theo biến vnpay_status=success để Frontend biết đường mà chúc mừng
+                        return redirect('/?vnpay_status=success&order_id=' . $order->id);
+                    } 
+                    // ...
                 } else {
                     return response()->json(['message' => 'Không tìm thấy đơn hàng'], 404);
                 }

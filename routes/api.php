@@ -16,10 +16,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/products', [ProductController::class, 'index']); // Xem danh sách thì cho xem thoải mái
 Route::get('/products/{id}', [ProductController::class, 'show']);
 
-Route::get("/cart",[CartController::class,'index']);
-Route::post("/cart",[CartController::class,'store']);
-Route::put("/cart/{id}",[CartController::class,'updateCart']);
-Route::delete("/cart/{id}",[CartController::class,'deleteCart']);
+
 
 Route::get('/categories',[CategoryController::class,'index']);
  Route::get('/vnpay/return', [PaymentController::class, 'vnpayReturn']);
@@ -37,7 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Dùng cancel don hang
     Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']);
     //
-   
+    Route::get("/cart",[CartController::class,'index']);
+    Route::post("/cart",[CartController::class,'store']);
+    Route::put("/cart/{id}",[CartController::class,'updateCart']);
+    Route::delete("/cart/{id}",[CartController::class,'deleteCart']);
 
 
     Route::post('/checkout',[CartController::class,"checkOut"]);
@@ -56,10 +56,9 @@ Route::middleware('auth:sanctum')->group(function () {
  
 Route::middleware(['auth:sanctum','admin'])->group( function(){
     // Chỉ người đăng nhập mới được Thêm/Sửa/Xóa
-
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::put('/products/{id}', [ProductController::class, 'update']);
+    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 //thay doi trang thai
   Route::put('orders/{id}/status',[OrderController::class,'UpdateStatus']);
 });
-Route::post('/products', [ProductController::class, 'store']);
-Route::put('/products/{id}', [ProductController::class, 'update']);
-Route::delete('/products/{id}', [ProductController::class, 'destroy']);

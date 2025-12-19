@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\DB;
 class CartController extends Controller
 {
     public function index(Request $request){
-        $usersId=1;
-        $cartItems=CartItem::with('product')->where('user_id',$usersId)->get();
+        
+        $cartItems=CartItem::with('product')->where('user_id',$request->user()->id)->get();
         return response()->json($cartItems);
     }
     public function store(Request $request){
@@ -21,7 +21,7 @@ class CartController extends Controller
             'product_id'=>"required|exists:products,id",
             "quantity"=>"required|integer|min:1"
         ]);
-        $usersId=1;
+        $usersId=$request->user()->id;
         $productId=$request->product_id;
         $quantity=$request->quantity;
 
@@ -45,7 +45,7 @@ class CartController extends Controller
         $request->validate([
             "quantity"=>"required|integer|min:1"
         ]);
-        $user_id = 1;
+        $user_id = $request->user()->id;
         $cartItems=CartItem::where("user_id",$user_id )->where('id',$id)->first();
         if(!$cartItems){
             return response()->json(["message"=>"khong tim thay san pham"]); 
@@ -58,7 +58,7 @@ class CartController extends Controller
         ]);
     }
     public function deleteCart($id,Request $request){
-        $cartItems=CartItem::where('user_id',1)->where('id',$id)->first();
+        $cartItems=CartItem::where('user_id',$request->user()->id)->where('id',$id)->first();
         if(!$cartItems){
             return response()->json(["message"=>"hang khong ton tai"]);
         }
