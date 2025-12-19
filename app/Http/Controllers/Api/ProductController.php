@@ -39,7 +39,7 @@ class ProductController extends Controller
 
     // 5. Sắp xếp và Phân trang
     $query->orderBy('created_at', 'desc');
-    $products = $query->paginate(10); 
+    $products = $query->paginate(2); 
 
     return response()->json([
         'status' => true,

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 Route::get('/', function () {
-   return redirect()->route('login');
+    return view('welcome');
 });
 
 Auth::routes();
