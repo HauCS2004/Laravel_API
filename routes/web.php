@@ -3,9 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-Route::get('/', function () {
-    return view('welcome');
-});
+//Route::redirect('/', '/home');
 
 Auth::routes();
 
@@ -14,7 +12,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 Route::get('/{any}', function () {
 
-    return view('welcome');
+    return view('home');
 })->where('any', '.*');
 
 Route::get('/test-email', function () {

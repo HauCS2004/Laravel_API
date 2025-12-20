@@ -9,6 +9,8 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderPlaced;
 class CartController extends Controller
 {
     public function index(Request $request){
@@ -100,7 +102,7 @@ class CartController extends Controller
                 ]);
             }
 
-            // Mail::to($user->email)->send(new OrderPlaced($order));
+             //Mail::to($user->email)->send(new OrderPlaced($order));
             CartItem::where('user_id',$user->id)->delete();
             DB::commit();
 
