@@ -101,6 +101,29 @@ public function index(Request $request)
         'data' => $orders
     ]);
 }
+public function indexAdmin(Request $request)
+{
+    // Khởi tạo query
+    // with('user'): Load thêm thông tin người mua (tên, email...)
+    // with('orderItems.product'): Load chi tiết sản phẩm trong đơn
+    $query = Order::with(['user', 'orderItems.product']); 
+
+    // --- TÍNH NĂNG MỞ RỘNG: LỌC TRẠNG THÁI ---
+    // Giúp Admin lọc nhanh: /api/admin/orders?status=pending
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    // Sắp xếp đơn mới nhất lên đầu
+    $orders = $query->orderBy('created_at', 'desc')
+                    ->paginate(10); // Admin màn hình to, load 10-20 đơn là đẹp
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Danh sách toàn bộ đơn hàng',
+        'data' => $orders
+    ]);
+}
 public function cancel(Request $request, $id)
 {
     // 1. Tìm đơn hàng (Phải đúng ID và đúng là CỦA MÌNH mới tìm ra)

@@ -12,34 +12,33 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends Controller
 {
-    public function index(Request $request) 
+ public function index(Request $request)
 {
-    // 1. Khởi tạo query
+    // Load category để hiển thị tên danh mục
     $query = Product::with('category'); 
 
-    // 2. Lọc theo Danh mục
-    if ($request->has('category_id')) {
+    // 1. Lọc theo Danh mục (Chỉ chạy khi có chọn)
+    if ($request->filled('category_id')) {
         $query->where('category_id', $request->category_id);
     }
 
-    // 3. Tìm kiếm theo tên
-    if ($request->has('keyword')) {
+    // 2. Tìm kiếm tên (keyword)
+    if ($request->filled('keyword')) {
         $query->where('name', 'LIKE', '%' . $request->keyword . '%');
     }
 
-    // --- 4. ĐOẠN BẠN ĐANG THIẾU ĐÂY (LỌC GIÁ) ---
-    if ($request->has('price_min')) {
+    // 3. Lọc giá (min - max)
+    if ($request->filled('price_min')) {
         $query->where('price', '>=', $request->price_min);
     }
     
-    if ($request->has('price_max')) {
+    if ($request->filled('price_max')) {
         $query->where('price', '<=', $request->price_max);
     }
-    // ----------------------------------------------
 
-    // 5. Sắp xếp và Phân trang
+    // 4. Sắp xếp & Phân trang
     $query->orderBy('created_at', 'desc');
-    $products = $query->paginate(2); 
+    $products = $query->paginate(8); 
 
     return response()->json([
         'status' => true,
@@ -53,7 +52,7 @@ class ProductController extends Controller
             'price'=>'required|numeric|min:0',
              'description'=>'nullable|string',
              'category_id'=>'required|exists:categories,id',
-             'image'=>'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+             'image'=>'nullable|image|mimes:jpeg,png,jpg,gif|max:5048'
         ]);
         if($validation->fails()){
             return response()->json([
@@ -64,7 +63,7 @@ class ProductController extends Controller
         }
         $imagepath=null;
         if($request->hasFile('image')){
-            $imagepath=$request->file('image')->store('upload','public');
+            $imagepath=$request->file('image')->store('uploads','public');
         }
         $product=Product::create([
             'name'=>$request->name,

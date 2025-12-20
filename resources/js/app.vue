@@ -9,6 +9,7 @@ const router = useRouter()
 const user = ref(null) 
 const token = ref(localStorage.getItem('auth_token')) 
 
+
 // Cấu hình Axios
 if (token.value) {
   axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
@@ -25,10 +26,30 @@ const handleLogin = async (credentials) => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
     
     alert(`Xin chào, ${user.value ? user.value.name : 'Bạn'}!`);
+    await fetchUser();
+    
+
     fetchCart();
     router.push('/'); // ✅ Chuyển trang bằng Router
   } catch (err) {
     alert('❌ Đăng nhập thất bại: ' + (err.response?.data?.message || err.message));
+  }
+}
+const handleRegister = async (formData) => {
+  try {
+    // Gọi API Laravel (Bạn cần chắc chắn Backend đã có route /api/register)
+    const res = await axios.post('/api/register', formData);
+    
+    alert('✅ Đăng ký thành công! Đang tự động đăng nhập...');
+    
+    // Đăng ký xong thì tự đăng nhập luôn cho tiện
+    await handleLogin({ 
+      email: formData.email, 
+      password: formData.password 
+    });
+    
+  } catch (err) {
+    alert('❌ Lỗi đăng ký: ' + (err.response?.data?.message || err.message));
   }
 }
 
@@ -47,9 +68,28 @@ const handleLogout = async () => {
 const products = ref([]); const cartItems = ref([]); 
 const currentPage = ref(1); const lastPage = ref(1);
 
-const fetchProducts = async (page = 1) => {
+const currentFilters = ref({}) 
+
+const fetchProducts = async (page = 1, filters = {}) => {
+  console.log("2. App.vue đang gọi API với filters:", filters);
   try {
-    const res = await axios.get('/api/products?page=' + page)
+    // Cập nhật bộ lọc mới nếu có
+    if (Object.keys(filters).length > 0) {
+        currentFilters.value = filters
+    }
+
+    // 👇 KHỚP PARAM VỚI BACKEND
+    const params = {
+        page: page,
+        keyword: currentFilters.value.keyword || '',   // Backend cần 'keyword'
+        price_min: currentFilters.value.min_price || '', // Backend cần 'price_min'
+        price_max: currentFilters.value.max_price || '', // Backend cần 'price_max'
+        // category_id: ... (nếu sau này làm lọc danh mục thì thêm vào đây)
+    }
+
+    const res = await axios.get('/api/products', { params })
+    
+    // Gán dữ liệu (Cấu trúc này chuẩn theo JSON bạn gửi rồi)
     products.value = res.data.data.data
     currentPage.value = res.data.data.current_page
     lastPage.value = res.data.data.last_page
@@ -163,9 +203,22 @@ const submitOrder = async (orderInfo) => {
     }
   }
 }
+// Hàm lấy thông tin user từ Token (để F5 không bị mất)
+const fetchUser = async () => {
+    if (!token.value) return;
+    try {
+        const res = await axios.get('/api/user'); // Route mặc định của Laravel Sanctum
+        user.value = res.data; // Lưu lại thông tin (bao gồm role)
+        console.log("👤 User Info:", user.value); // <--- Xem role ở đây nè
+    } catch (e) {
+        // Token hết hạn hoặc lỗi -> Đăng xuất
+        handleLogout();
+    }
+}
 
 // --- 5. KHỞI TẠO ---
 onMounted(() => {
+  
   // Check VNPAY redirect
   const urlParams = new URLSearchParams(window.location.search);
   const vnpStatus = urlParams.get('vnpay_status');
@@ -183,7 +236,11 @@ onMounted(() => {
   }
 
   fetchProducts(); 
-  if (token.value) { fetchCart(); }
+  if (token.value) { 
+    fetchUser();
+    fetchCart(); }
+
+  
 })
 </script>
 
@@ -203,6 +260,13 @@ onMounted(() => {
                🛒 Giỏ hàng
                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{ cartItems.length }}</span>
              </button>
+                    <router-link 
+                v-if="user && user.role === 'admin'" 
+                to="/admin/orders" 
+                class="btn btn-danger fw-bold"
+            >
+                👑 Trang Quản Lý
+            </router-link>
              <button class="btn btn-danger" @click="handleLogout">Đăng xuất</button>
           </template>
           
@@ -227,6 +291,8 @@ onMounted(() => {
         @submit-order="submitOrder"
         @login-success="handleLogin"
         @cancel="router.push('/cart')"
+        @register-submit="handleRegister"
+        @search="fetchProducts(1, $event)"
     ></router-view>
     
   </div>

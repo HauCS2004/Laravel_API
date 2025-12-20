@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const email = ref('')
 const password = ref('')
 const emit = defineEmits(['login-success', 'switch-to-register'])
@@ -33,7 +34,7 @@ const handleLogin = async () => {
             
             <div class="text-center">
               <span>Chưa có tài khoản? </span>
-              <a href="#" @click.prevent="$emit('switch-to-register')">Đăng ký ngay</a>
+              <a href="" @click.prevent="router.push({ name: 'register' })">Đăng ký ngay</a>
             </div>
           </form>
         </div>

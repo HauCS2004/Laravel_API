@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\DashboardController;
 
 // 1. Route công khai (Ai cũng vào được)
 Route::post('/register', [AuthController::class, 'register']);
@@ -18,7 +19,7 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 
 
 
-Route::get('/categories',[CategoryController::class,'index']);
+//Route::get('/categories',[CategoryController::class,'index']);
  Route::get('/vnpay/return', [PaymentController::class, 'vnpayReturn']);
 
 // 2. Route BẢO MẬT (Phải có Token mới vào được)
@@ -59,6 +60,14 @@ Route::middleware(['auth:sanctum','admin'])->group( function(){
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+
+    //category
+    Route::apiResource('categories',CategoryController::class);
+    //DashboardController
+ 
+
+    Route::get('/admin/orders', [OrderController::class, 'indexAdmin']);
 //thay doi trang thai
-  Route::put('orders/{id}/status',[OrderController::class,'UpdateStatus']);
+  Route::put('/admin/orders/{id}/status',[OrderController::class,'UpdateStatus']);
 });
+   Route::get('/dashboard', [DashboardController::class, 'index']);

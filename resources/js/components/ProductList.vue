@@ -1,36 +1,89 @@
 <script setup>
-defineProps(['products', 'currentPage', 'lastPage', 'error'])
-defineEmits(['changePage', 'addToCart'])
+import { ref } from 'vue'
+
+const props = defineProps(['products', 'currentPage', 'lastPage'])
+const emit = defineEmits(['changePage', 'addToCart', 'search']) 
+
+// Khai báo biến (Tên biến đặt sao cũng được, quan trọng là lúc emit)
+const keyword = ref('') 
+const minPrice = ref('')
+const maxPrice = ref('')
+
+// Xử lý khi bấm nút Lọc
+const handleSearch = () => {
+    console.log("1. Đã bấm nút Lọc, dữ liệu là:", { 
+        keyword: keyword.value, 
+        min_price: minPrice.value, 
+        max_price: maxPrice.value 
+    });
+
+    emit('search', {
+        keyword: keyword.value,
+        min_price: minPrice.value,
+        max_price: maxPrice.value
+    })
+}
+
+// Reset form
+const resetSearch = () => {
+    keyword.value = ''
+    minPrice.value = ''
+    maxPrice.value = ''
+    handleSearch() 
+}
 </script>
 
 <template>
   <div>
-    <div v-if="error" class="alert alert-danger">{{ error }}</div>
-    
-    <div v-else>
-      <div class="row g-4">
-        <div v-for="product in products" :key="product.id" class="col-6 col-md-4 col-lg-3">
-          <div class="card h-100 shadow-sm product-card">
-            <img :src="product.image ? '/storage/' + product.image : 'https://via.placeholder.com/150'" 
-                 class="card-img-top p-3" style="height: 200px; object-fit: contain;">
-            <div class="card-body d-flex flex-column text-center">
-              <h5 class="card-title text-truncate" :title="product.name">{{ product.name }}</h5>
-              <p class="card-text text-danger fw-bold">{{ Number(product.price).toLocaleString() }} đ</p>
-              <button @click="$emit('addToCart', product)" class="btn btn-success mt-auto">Thêm vào giỏ</button>
+    <div class="card mb-4 shadow-sm bg-light border-0">
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-5">
+                    <input v-model="keyword" type="text" class="form-control" placeholder="🔍 Tìm tên sản phẩm..." @keyup.enter="handleSearch">
+                </div>
+                <div class="col-md-2">
+                    <input v-model="minPrice" type="number" class="form-control" placeholder="Giá từ...">
+                </div>
+                <div class="col-md-2">
+                    <input v-model="maxPrice" type="number" class="form-control" placeholder="Giá đến...">
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button class="btn btn-primary w-100 fw-bold" @click="handleSearch">Lọc</button>
+                    <button class="btn btn-outline-danger" @click="resetSearch">Reset</button>
+                </div>
             </div>
-          </div>
+        </div>
+    </div>
+
+    <div v-if="products.length > 0" class="row">
+      <div class="col-md-3 mb-4" v-for="product in products" :key="product.id">
+        <div class="card h-100 shadow-sm hover-shadow">
+            <img :src="product.image_url || 'https://placehold.co/300'" 
+                 class="card-img-top p-3" 
+                 style="height: 200px; object-fit: contain" 
+                 alt="...">
+            
+            <div class="card-body d-flex flex-column">
+                <h6 class="card-title text-truncate">{{ product.name }}</h6>
+                <p class="card-text text-danger fw-bold fs-5">{{ Number(product.price).toLocaleString() }} đ</p>
+                
+                <button class="btn btn-outline-primary w-100 mt-auto" @click="$emit('addToCart', product)">
+                    <i class="bi bi-cart-plus"></i> Thêm vào giỏ
+                </button>
+            </div>
         </div>
       </div>
+    </div>
+    
+    <div v-else class="text-center py-5">
+        <h4 class="text-muted">😢 Không tìm thấy sản phẩm nào!</h4>
+        <button class="btn btn-link" @click="resetSearch">Xem tất cả</button>
+    </div>
 
-      <div class="d-flex justify-content-center gap-3 mt-4" v-if="products.length > 0">
-         <button @click="$emit('changePage', currentPage - 1)" :disabled="currentPage === 1" class="btn btn-secondary">Prev</button>
-         <span class="align-self-center fw-bold">Trang {{ currentPage }} / {{ lastPage }}</span>
-         <button @click="$emit('changePage', currentPage + 1)" :disabled="currentPage === lastPage" class="btn btn-secondary">Next</button>
-      </div>
+    <div class="d-flex justify-content-center mt-4" v-if="lastPage > 1">
+        <button class="btn btn-outline-secondary me-2" :disabled="currentPage === 1" @click="$emit('changePage', currentPage - 1)">« Trước</button>
+        <span class="align-self-center fw-bold">Trang {{ currentPage }} / {{ lastPage }}</span>
+        <button class="btn btn-outline-secondary ms-2" :disabled="currentPage === lastPage" @click="$emit('changePage', currentPage + 1)">Sau »</button>
     </div>
   </div>
 </template>
-
-<style scoped>
-.product-card:hover { transform: translateY(-5px); transition: 0.2s; }
-</style>
