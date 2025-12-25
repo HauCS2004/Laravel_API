@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import AdminSidebar from './AdminSidebar.vue'
+import { useToast } from "vue-toastification";
+const toast = useToast();
 const orders = ref([])
 const router = useRouter()
 
@@ -35,13 +37,24 @@ const updateStatus = async (order, newStatus) => {
     
     try {
         await axios.put(`/api/admin/orders/${order.id}/status`, { status: newStatus })
-        alert('✅ Cập nhật thành công!')
+        toast.success(`✅ Đã cập nhật trạng thái đơn #${order.id} thành [${newStatus}]`)
         fetchOrders() // Load lại danh sách
     } catch (e) {
         alert('❌ Lỗi cập nhật' + (e.response?.data?.message || e.message))
     }
 }
-
+// cleanup orders
+const runCleanup = async () => {
+    if(confirm('Bạn có muốn dọn dẹp và hoàn kho các đơn hàng quá hạn không?')) {
+        try {
+            const res = await axios.post('/api/admin/orders/cleanup');
+             toast.success(res.data.message);
+            fetchOrders(); // Load lại danh sách đơn hàng để cập nhật trạng thái mới
+        } catch (error) {
+            console.error("Lỗi dọn dẹp:", error);
+        }
+    }
+}
 onMounted(() => {
     fetchOrders()
 })
@@ -61,6 +74,9 @@ onMounted(() => {
                   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                       <h5 class="mb-0">👑 Quản Lý Đơn Hàng</h5>
                       <button class="btn btn-sm btn-light text-primary" @click="fetchOrders">🔄 Làm mới</button>
+                      <button @click="runCleanup" class="btn btn-sm btn-warning shadow-sm">
+                            <i class="bi bi-trash"></i> Dọn dẹp đơn treo (quá 30p)
+                        </button>
                   </div>
                   
                   <div class="card-body p-0">

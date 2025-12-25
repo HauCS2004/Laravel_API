@@ -2,7 +2,9 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter, useRoute } from 'vue-router'
-
+import { useToast } from "vue-toastification";
+//note
+const toast = useToast();
 // --- 1. STATE QUẢN LÝ ---
 const router = useRouter()
 const route = useRoute()
@@ -15,6 +17,7 @@ const token = ref(localStorage.getItem('auth_token'))
 if (token.value) {
   axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
 }
+
 
 // --- 2. LOGIC AUTH ---
 const handleLogin = async (credentials) => {
@@ -41,7 +44,7 @@ const handleRegister = async (formData) => {
     // Gọi API Laravel (Bạn cần chắc chắn Backend đã có route /api/register)
     const res = await axios.post('/api/register', formData);
     
-    alert('✅ Đăng ký thành công! Đang tự động đăng nhập...');
+    toast.success("Đăng ký thành công!");
     
     // Đăng ký xong thì tự đăng nhập luôn cho tiện
     await handleLogin({ 
@@ -115,26 +118,27 @@ const fetchCart = async () => {
     if(e.response && e.response.status === 401) handleLogout();
   }
 }
-
+//add to cart
 const addToCart = async (product) => {
   if (!token.value) {
-    alert("Vui lòng đăng nhập để mua hàng!");
+    toast.error("Vui lòng đăng nhập!");
     router.push('/login');
     return;
   }
   if(products.stock <=0){
-    alert('sản phẩm đã hết hàng');
+    toast.error("Sản phẩm hết hàng!");
     return;
   }
   try {
     await axios.post('/api/cart', { product_id: product.id, quantity: 1 });
-    alert('✅ Đã thêm vào giỏ!');
+      toast.success("Đã thêm " + product.name + " vào giỏ hàng!");
+
     const productInList = products.value.find(p => p.id === product.id);
         if (productInList && productInList.stock > 0) {
             productInList.stock -= 1; 
         }
      fetchCart();
-  } catch (e) { alert('Lỗi: ' + e.message) }
+  } catch (e) {toast.error("Không thể thêm hàng: " + e.message); }
 }
 
 const updateQuantity = async (item, change) => {
@@ -239,7 +243,7 @@ const fetchUser = async () => {
 
 // --- 5. KHỞI TẠO ---
 onMounted(async() => {
-  
+  document.title = "🛍️ Shop Của Hậu"
   // Check VNPAY redirect
   const urlParams = new URLSearchParams(window.location.search);
   const vnpStatus = urlParams.get('vnpay_status');

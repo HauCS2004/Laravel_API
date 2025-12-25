@@ -41,6 +41,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete("/cart/{id}",[CartController::class,'deleteCart']);
 
 
+   
+
+
     Route::post('/checkout',[CartController::class,"checkOut"]);
     // Route tạo link thanh toán
     Route::post('/payment/vnpay', [PaymentController::class, 'createPayment']);
@@ -64,9 +67,11 @@ Route::middleware(['auth:sanctum','admin'])->group( function(){
     //category
     Route::apiResource('categories',CategoryController::class);
     //DashboardController
- 
+    
 
     Route::get('/admin/orders', [OrderController::class, 'indexAdmin']);
+    //
+   Route::post('/admin/orders/cleanup', [OrderController::class, 'cleanupExpiredOrders']);
 //thay doi trang thai
   Route::put('/admin/orders/{id}/status',[OrderController::class,'UpdateStatus']);
 });

@@ -203,4 +203,23 @@ public function cancel(Request $request, $id)
             "date"=>$order
         ]);
     }
+    
+
+    public function cleanupExpiredOrders() {
+        $expiredOrders = Order::where('status', 'pending')
+                            ->where('created_at', '<=', now()->subMinutes(30))
+                            ->with('OrderItems')
+                            ->get();
+
+        foreach ($expiredOrders as $order) {
+            DB::transaction(function () use ($order) {
+                foreach ($order->OrderItems as $item) {
+                    Product::where('id', $item->product_id)->increment('stock', $item->quantity);
+                }
+                $order->update(['status' => 'canceled']);
+            });
+        }
+
+        return response()->json(['message' => 'Đã dọn dẹp ' . $expiredOrders->count() . ' đơn hàng quá hạn.']);
+    }
 }
