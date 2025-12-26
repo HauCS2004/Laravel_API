@@ -26,3 +26,13 @@ Route::get('/test-email', function () {
         return 'Lỗi rồi: ' . $e->getMessage();
     }
 });
+// routes/web.php
+
+// ... các route cũ giữ nguyên
+
+// Thêm đoạn này:
+Route::get('/nap-du-lieu-bi-mat', function () {
+    \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true]); // Xóa sạch làm lại bảng (cho chắc)
+    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]); // Nạp dữ liệu mẫu
+    return 'Đã nạp dữ liệu thành công! Vào trang chủ xem hàng đi sếp!';
+});
