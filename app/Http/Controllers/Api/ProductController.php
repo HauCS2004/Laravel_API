@@ -7,7 +7,9 @@ use App\Http\Controllers\Api\load;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
+use App\Models\Comment;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends Controller
@@ -89,14 +91,24 @@ class ProductController extends Controller
                 'message'=>"khong tim thay"
             ],404);
         }
-        $product->load('category');
+        $product->load('category','comments.user');
+
+        $wishlist=false;
+        if(auth('sanctum')->check()){
+            $user_id=auth('sanctum')->id();
+            $wishlist=Wishlist::where('user_id',$user_id)->where('product_id',$id)->exists();
+        }
+
+
         
         return response()->json([
             'status'=>true,
             'message'=>'success',
-            'data'=>$product
+            'product'=>$product,
+            'is_wishlist'=>$wishlist
         ],200);
     }
+
     public function update($id, Request $request) {
     $product = Product::find($id);
     if (!$product) {
@@ -150,5 +162,55 @@ class ProductController extends Controller
         ],200);
 
     }
+    public function toggleWishlist(Request $request){
+        $user=$request->user();
+        $product_id=$request->product_id;
+        $wishlist=Wishlist::where('user_id',$user->id)->where('product_id',$product_id)->first();
+        if($wishlist){
+            $wishlist->delete();
+            return response()->json([
+                'status' =>'removed',
+                'message'=>'removed from wishlist']);
+        } else{
+            Wishlist::Create([
+                'user_id'=>$user->id,
+                'product_id'=>$product_id
+            ]);
+            return response()->json([
+                'status'=>'added',
+                'message'=>'add to wishlist'
+            ]);
+        }
+    }
 
+    public function StoreComment(Request $request){
+        $request->validate([
+            'content'=>"required",
+            'rating'=>"required|integer|min:1|max:5",
+            'product_id'=>"required|exists:products,id"
+        ]);
+        $comment=Comment::create([
+            'user_id'=>$request->user()->id,
+            'product_id'=>$request->product_id,
+            'content'=>$request->content,
+            'rating'=>$request->rating
+        ]);
+        return response()->json($comment->load('user'));
+    }
+    // Route::get('/wishlist', [ProductController::class, 'getWishlist'])->middleware('auth:sanctum');
+
+public function getWishlist(Request $request) {
+    $user = $request->user();
+    
+    // Lấy wishlist kèm thông tin sản phẩm
+    $wishlists = \App\Models\Wishlist::where('user_id', $user->id)
+                    ->with('product') // Quan trọng: Phải load thông tin sản phẩm
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+                    
+    return response()->json([
+        'status' => true,
+        'data' => $wishlists
+    ]);
+}
 }

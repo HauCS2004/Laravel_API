@@ -19,7 +19,7 @@ const handleLogout = async () => {
 <template>
     <div class="card border-0 shadow-sm h-100">
         <div class="card-header bg-dark text-white text-center py-3">
-            <h5 class="mb-0">👑 QUẢN TRỊ</h5>
+            <h5 class="mb-0"> QUẢN TRỊ</h5>
             <small>Admin Panel</small>
         </div>
         <div class="list-group list-group-flush">

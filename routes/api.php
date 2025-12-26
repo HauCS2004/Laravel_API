@@ -40,6 +40,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put("/cart/{id}",[CartController::class,'updateCart']);
     Route::delete("/cart/{id}",[CartController::class,'deleteCart']);
 
+    //Wishlist
+    Route::post('/wishlist/toggle',[ProductController::class,'toggleWishlist']);
+    Route::get('/wishlist',[ProductController::class,'getWishlist']);
+    //comment
+    Route::post('/comments', [ProductController::class, 'StoreComment']);
 
    
 

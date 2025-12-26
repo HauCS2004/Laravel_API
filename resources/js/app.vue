@@ -279,6 +279,9 @@ onMounted(async() => {
        <div class="d-flex align-items-center gap-3">
           <h1 class="h3 m-0 text-primary cursor-pointer" @click="router.push('/')">🛍️ Shop Của Hậu</h1>
           <span v-if="user" class="text-muted">| Hi, {{ user.name }}</span>
+          <router-link to="/wishlist" class="btn btn-light text-danger position-relative me-2" title="Yêu thích">
+                  <i class="bi bi-heart"></i>
+              </router-link>
        </div>
 
        <div class="d-flex gap-2">
@@ -289,11 +292,12 @@ onMounted(async() => {
                🛒 Giỏ hàng
                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{ cartItems.length }}</span>
              </button>
+             
               <router-link 
                 v-if="user && user.role === 'admin'" 
                 to="/admin/dashboard" 
                 class="btn btn-danger fw-bold">
-                👑 Trang Quản Lý
+                 Trang Quản Lý
              </router-link>
              <button class="btn btn-danger" @click="handleLogout">Đăng xuất</button>
           </template>

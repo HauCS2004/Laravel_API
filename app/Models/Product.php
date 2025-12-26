@@ -30,4 +30,8 @@ class Product extends Model
     // Nếu là ảnh bạn tự upload lưu trong storage/app/public
     return asset('storage/' . $this->image);
 }
+   public function comments()
+   {
+       return $this->hasMany(Comment::class)->latest();
+   }
 }

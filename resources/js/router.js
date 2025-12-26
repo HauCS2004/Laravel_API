@@ -11,6 +11,8 @@ import AdminOrders from './components/admin/AdminOrders.vue'
 import AdminProducts from './components/admin/AdminProducts.vue'
 import AdminCategory from './components/admin/AdminCategory.vue'
 import AdminDashboard from './components/admin/AdminDashBoard.vue'
+import ProductDetail from './components/ProductDetail.vue'
+import Wishlist from './components/Wishlist.vue'
 
 const routes = [
     { path: '/', component: ProductList, name: 'products' },
@@ -23,6 +25,13 @@ const routes = [
     {  path: '/admin/products',  component: AdminProducts},
     {  path: '/admin/categories',  component: AdminCategory},
     {  path: '/admin/dashboard',  component: AdminDashboard},
+    {
+    path: '/product/:id', 
+    name: 'ProductDetail',  
+    component: ProductDetail,
+    },
+    { path: '/wishlist', component: Wishlist, name: 'wishlist' },
+
 ]
 
 const router = createRouter({

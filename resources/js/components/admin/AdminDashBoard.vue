@@ -31,7 +31,7 @@ onMounted(() => fetchStats())
         </div>
 
         <div class="col-md-9 col-lg-10">
-            <h3 class="mb-4 fw-bold text-secondary">📊 Tổng Quan Kinh Doanh</h3>
+            <h3 class="mb-4 fw-bold text-secondary"> Tổng Quan Kinh Doanh</h3>
 
             <div class="row g-4">
                 <div class="col-md-6 col-lg-3">

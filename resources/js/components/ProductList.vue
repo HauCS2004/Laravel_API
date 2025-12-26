@@ -70,15 +70,21 @@ const resetSearch = () => {
     <div v-if="products.length > 0" class="row">
       <div class="col-md-3 mb-4" v-for="product in products" :key="product.id">
         <div class="card h-100 shadow-sm hover-shadow">
-            <img :src="product.image_url || 'https://placehold.co/300'" 
-                 class="card-img-top p-3" 
-                 style="height: 200px; object-fit: contain" 
-                 alt="...">
+            <router-link :to="{ name: 'ProductDetail', params: { id: product.id } }">
+                <img 
+                    :src="product.image_url || 'https://placehold.co/300'" 
+                    class="card-img-top p-3" 
+                    style="height: 200px; object-fit: contain; cursor: pointer" 
+                    alt="...">
+            </router-link>
             
             <div class="card-body d-flex flex-column">
-                <h6 class="card-title text-truncate">{{ product.name }}</h6>
-                <p class="card-text text-danger fw-bold fs-5">{{ Number(product.price).toLocaleString() }} đ</p>
+               <router-link :to="{ name: 'ProductDetail', params: { id: product.id }}"
+                class="text-decoration-none  mb-2 flex-grow-1">
+                    <h6 class="card-title text-truncate">{{ product.name }}</h6>
                 
+                <p class="card-text text-danger fw-bold fs-5">{{ Number(product.price).toLocaleString() }} đ</p>
+                </router-link>
                 <button 
                     class="btn w-100" 
                     :class="product.stock > 0 && !isLimitReached(product) ? 'btn-outline-primary' : 'btn-outline-secondary'"
