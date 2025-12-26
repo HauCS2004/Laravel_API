@@ -101,7 +101,7 @@ class DatabaseSeeder extends Seeder
 
     // Sau đó mới gọi ProductSeeder
     $this->call([
-        Productseeder::class,
+        ProductSeeder::class,
     ]);
     }
     
