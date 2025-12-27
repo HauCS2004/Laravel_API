@@ -4,6 +4,7 @@ import axios from 'axios'
 
 const orders = ref([])
 const loading = ref(true)
+defineProps(['products', 'cartItems', 'totalAmount', 'user', 'currentPage', 'lastPage', 'isloading']);
 
 // const fetchOrders = async () => {
 //   try {
