@@ -6,7 +6,8 @@ FROM node:18-alpine as node_builder
 WORKDIR /app
 
 # Copy file config để cài thư viện trước (tận dụng cache)
-COPY package.json package-lock.json vite.config.js ./
+# Xóa package-lock.json đi, chỉ để lại package.json
+COPY package.json vite.config.js ./
 RUN npm install
 
 # Copy toàn bộ code vào để build
