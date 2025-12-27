@@ -1,33 +1,31 @@
 # ============================================
-# GIAI ĐOẠN 1: Dùng Node chuẩn (Không dùng Alpine)
+# GIAI ĐOẠN 1: Dùng Node 20 (Fix lỗi crypto.hash)
 # ============================================
-FROM node:18 as node_builder
+FROM node:20 as node_builder
 
 WORKDIR /app
 
-# Copy file config. 
-# Mẹo: Copy package.json trước để tận dụng cache
+# Copy file config
 COPY package.json vite.config.js ./
 
-# Nếu có package-lock.json thì copy, không có thì thôi (tránh lỗi not found)
+# Copy package-lock.json nếu có (dấu * giúp không lỗi nếu thiếu)
 COPY package-lock.json* ./
 
-# Cài đặt dependency (Dùng --legacy-peer-deps để tránh lỗi xung đột version nếu có)
+# Cài đặt dependency
 RUN npm install --legacy-peer-deps
 
 # Copy toàn bộ code
 COPY . .
 
-# Build với RAM cao
+# Build với RAM cao (4GB)
 RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
 
 # ============================================
-# GIAI ĐOẠN 2: PHP Laravel (Giữ nguyên như cũ)
+# GIAI ĐOẠN 2: PHP Laravel (Giữ nguyên)
 # ============================================
 FROM php:8.2
 
-# Cài thư viện hệ thống
 RUN apt-get update && apt-get install -y \
     git curl libpng-dev libonig-dev libxml2-dev zip unzip default-mysql-client ca-certificates
 
