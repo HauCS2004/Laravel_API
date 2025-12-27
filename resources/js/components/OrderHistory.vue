@@ -1,10 +1,17 @@
+<script>
+// ⚠️ QUAN TRỌNG: Phải thêm block script thường này (nằm ngoài script setup)
+export default {
+  inheritAttrs: false // 🛑 Lệnh cấm Vue tự dán attributes
+}
+</script>
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 const orders = ref([])
 const loading = ref(true)
-defineProps(['products', 'cartItems', 'totalAmount', 'user', 'currentPage', 'lastPage', 'isloading']);
+//defineProps(['products', 'cartItems', 'totalAmount', 'user', 'currentPage', 'lastPage', 'isloading']);
 
 // const fetchOrders = async () => {
 //   try {
