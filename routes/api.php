@@ -103,6 +103,7 @@ Route::middleware(['auth:sanctum','admin'])->group( function(){
     //category
    // Route::apiResource('categories',CategoryController::class);
     //DashboardController
+    Route::get('/dashboard', [DashboardController::class, 'index']);
     
 
     Route::get('/admin/orders', [OrderController::class, 'indexAdmin']);
@@ -111,4 +112,4 @@ Route::middleware(['auth:sanctum','admin'])->group( function(){
 //thay doi trang thai
   Route::put('/admin/orders/{id}/status',[OrderController::class,'UpdateStatus']);
 });
-   Route::get('/dashboard', [DashboardController::class, 'index']);
+   

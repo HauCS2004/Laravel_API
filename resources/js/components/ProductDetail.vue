@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue'; // 1. Nhớ thêm computed
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { useToast } from "vue-toastification";
@@ -12,15 +12,38 @@ const comments = ref([]);
 const isWishlist = ref(false);
 const isLoading = ref(true);
 const emit = defineEmits(['addToCart']);
-// Biến cho form bình luận
 const newComment = ref({ content: '', rating: 5 });
 
-// 1. Lấy dữ liệu khi vào trang
+// --- 2. LOGIC BIẾN 1 ẢNH THÀNH DANH SÁCH ẢNH (QUAN TRỌNG) ---
+const productImages = computed(() => {
+    if (!product.value) return [];
+    
+    
+    const mainImage = product.value.image_url || 'https://placehold.co/400';
+    
+    // Logic mở rộng: Nếu sau này ông lén sửa DB lưu dạng JSON mảng, đoạn này sẽ tự parse
+    // Còn hiện tại nó sẽ chạy dòng 'return [mainImage]'
+    const rawImage = product.value.image;
+    if (rawImage && typeof rawImage === 'string' && rawImage.startsWith('[')) {
+        try {
+            
+             const parsed = JSON.parse(rawImage);
+             if (Array.isArray(parsed) && parsed.length > 0) {
+                 return parsed.map(path => path.startsWith('http') ? path : `/storage/${path}`);
+             }
+        } catch (e) {}
+    }
+
+    
+    return [mainImage];
+});
+// -----------------------------------------------------------
+
 const fetchProductDetail = async () => {
     try {
         const res = await axios.get(`/api/products/${route.params.id}`);
         product.value = res.data.product;
-        comments.value = res.data.product.comments; // Laravel đã trả về kèm comments
+        comments.value = res.data.product.comments;
         isWishlist.value = res.data.is_wishlist;
     } catch (e) {
         toast.error("Không tìm thấy sản phẩm!");
@@ -29,12 +52,9 @@ const fetchProductDetail = async () => {
     }
 };
 
-// 2. Xử lý Yêu thích
 const toggleWishlist = async () => {
     try {
         const res = await axios.post('/api/wishlist/toggle', { product_id: product.value.id });
-        
-        // Cập nhật trạng thái trái tim ngay lập tức
         if (res.data.status === 'added') {
             isWishlist.value = true;
             toast.success("❤️ Đã thích sản phẩm!");
@@ -51,30 +71,22 @@ const toggleWishlist = async () => {
     }
 };
 
-// 3. Gửi bình luận
 const submitComment = async () => {
     if (!newComment.value.content) return toast.warning("Vui lòng nhập nội dung!");
-
     try {
         const res = await axios.post('/api/comments', {
             product_id: product.value.id,
             content: newComment.value.content,
             rating: newComment.value.rating
         });
-
-        // Thêm bình luận mới vào đầu danh sách ngay lập tức
         comments.value.unshift(res.data);
-        
-        // Reset form
         newComment.value.content = '';
         toast.success("Cảm ơn đánh giá của bạn!");
     } catch (e) {
-        toast.error("Lỗi khi gửi bình luận (Bạn đã đăng nhập chưa?)" + e.message);
+        toast.error("Lỗi khi gửi bình luận");
     }
 };
 
-// Emit sự kiện thêm vào giỏ (Nếu Hậu dùng props/emit từ App.vue thì sửa lại nhé)
-// Ở đây mình giả lập gọi API trực tiếp luôn cho tiện
 const addToCart = async () => {
      emit('addToCart', product.value);
      toast.success("Đã thêm vào giỏ hàng!");
@@ -88,9 +100,43 @@ onMounted(() => {
 <template>
     <div class="container mt-4" v-if="!isLoading && product">
         <div class="row shadow-sm bg-white p-4 rounded">
+            
             <div class="col-md-5">
-                <img :src="product.image_url || 'https://placehold.co/400'" class="img-fluid rounded border" alt="Product Image">
+                <div id="productCarousel" class="carousel slide border rounded overflow-hidden" data-bs-ride="carousel">
+                    
+                    <div class="carousel-inner">
+                        <div 
+                            v-for="(imgUrl, index) in productImages" 
+                            :key="index" 
+                            class="carousel-item" 
+                            :class="{ active: index === 0 }"
+                        >
+                            <img :src="imgUrl" class="d-block w-100" style="height: 400px; object-fit: contain;" alt="Product Image">
+                        </div>
+                    </div>
+
+                    <button v-if="productImages.length > 1" class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon bg-dark rounded-circle p-2" aria-hidden="true"></span>
+                    </button>
+                    <button v-if="productImages.length > 1" class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon bg-dark rounded-circle p-2" aria-hidden="true"></span>
+                    </button>
+
+                    <div class="d-flex mt-2 gap-2 overflow-auto px-1 pb-2" v-if="productImages.length > 1">
+                        <img 
+                            v-for="(imgUrl, index) in productImages" 
+                            :key="index"
+                            :src="imgUrl"
+                            class="border rounded cursor-pointer"
+                            style="width: 60px; height: 60px; object-fit: cover;"
+                            :class="{ 'border-primary border-2': index === 0 }"
+                            data-bs-target="#productCarousel" 
+                            :data-bs-slide-to="index"
+                        >
+                    </div>
+                </div>
             </div>
+
             <div class="col-md-7">
                 <h2 class="fw-bold">{{ product.name }}</h2>
                 <div class="text-warning mb-2">
